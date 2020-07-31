@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>predict image app</title>
+    <style>
+        *{
+            font-size: 30px;
+        }
+    </style>
+</head>
+<body>
+    <input id="image-selector" type="file">
+    <button id="predict-button">Predict</button>
+    <p style="font-weight:bold">Prediction</p>
+    <p>Result label: <span id="resultLab"></span> </p>
+    <p>Result probability: <span id="resultProb"></span> </p>
+    <p>Timer difference in milliseconds: <span id="timerFinal"></span> </p>
+    <img id="selected-image" src="" width="500" height="500"/>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        var base64Image;
+        $("#image-selector").change(function () {
+            $("#timerFinal").text("");
+            reader = new FileReader();
+            reader.onload = function (e) {
+                dataURL = reader.result;
+                $("#selected-image").attr("src", dataURL);
+                //png files only
+               // base64Image = dataURL.replace("data:image/png;base64,","");
+                base64Image = dataURL.replace(/^data:image\/[a-z]+;base64,/, "");
+                console.log(base64Image);
+            }
+            reader.readAsDataURL($("#image-selector")[0].files[0]);
+
+        });
+
+        $("#predict-button").click(function (event) {
+            message = {
+                image: base64Image
+            }
+            console.log(message);
+
+            $.post('http://127.0.0.1:5000/predict', JSON.stringify(message), function (response) {
+
+                $("#resultLab").text(response.prediction.resLabel);
+                $("#resultProb").text(response.prediction.percent);
+                $("#timerFinal").text(response.prediction.timeDiff);
+                console.log(response);
+            });
+        });
+    </script>
+
+</body>
+</html>
